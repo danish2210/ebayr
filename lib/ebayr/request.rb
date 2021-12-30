@@ -1,5 +1,4 @@
-# -*- encoding : utf-8 -*-
-module Ebayr #:nodoc:
+module Ebayr # :nodoc:
   # Encapsulates a request which is sent to the eBay Trading API.
   class Request
     include Ebayr
@@ -10,11 +9,12 @@ module Ebayr #:nodoc:
     # overridden here (same for auth_token, site_id and compatability_level).
     def initialize(command, options = {})
       @command = self.class.camelize(command.to_s)
-      @uri = options.delete(:uri) || self.uri
+      @uri = options.delete(:uri) || uri
       @uri = URI.parse(@uri) unless @uri.is_a? URI
-      @auth_token = (options.delete(:auth_token) || self.auth_token).to_s
-      @site_id = (options.delete(:site_id) || self.site_id).to_s
-      @compatability_level = (options.delete(:compatability_level) || self.compatability_level).to_s
+      @auth_token = (options.delete(:auth_token) || auth_token).to_s
+      @custom_headers = (options.delete(:headers) || custom_headers).to_s
+      @site_id = (options.delete(:site_id) || site_id).to_s
+      @compatability_level = (options.delete(:compatability_level) || compatability_level).to_s
       @http_timeout = (options.delete(:http_timeout) || 60).to_i
       # Remaining options are converted and used as input to the call
       @input = options.delete(:input) || options
@@ -39,7 +39,7 @@ module Ebayr #:nodoc:
         'X-EBAY-API-CALL-NAME' => @command.to_s,
         'X-EBAY-API-SITEID' => @site_id.to_s,
         'Content-Type' => 'text/xml'
-      }
+      }.merge(@custom_headers)
     end
 
     # Gets the body of this request (which is XML)
@@ -55,7 +55,7 @@ module Ebayr #:nodoc:
 
     # Returns eBay requester credential XML if @auth_token is present
     def requester_credentials_xml
-      return "" unless @auth_token && !@auth_token.empty?
+      return '' unless @auth_token.present? && @custom_headers.present?
 
       <<-XML
       <RequesterCredentials>
@@ -98,19 +98,21 @@ module Ebayr #:nodoc:
     def self.xml(*args)
       args.map do |structure|
         case structure
-          when Hash then serialize_hash(structure)
-          when Array then structure.map { |v| xml(v) }.join
-          else self.serialize_input(structure).to_s
+        when Hash then serialize_hash(structure)
+        when Array then structure.map { |v| xml(v) }.join
+        else serialize_input(structure).to_s
         end
       end.join
     end
 
     def self.serialize_hash(hash)
       hash.map do |k, v|
-        if v.kind_of?(Hash) && v.key?(:value) && v.key?(:attr)
+        if v.instance_of?(Array)
+          v.map { |v_item| "<#{k}>#{xml(v_item)}</#{k}>" }
+        elsif v.is_a?(Hash) && v.key?(:value) && v.key?(:attr)
           serialize_hash_with_attr(k, v)
         else
-          "<#{k.to_s}>#{xml(v)}</#{k.to_s}>"
+          "<#{k}>#{xml(v)}</#{k}>"
         end
       end.join
     end
@@ -120,15 +122,15 @@ module Ebayr #:nodoc:
     # gives <foo name="baz">Bar</foo>
     def self.serialize_hash_with_attr(key, value)
       attr = value[:attr].map { |k_attr, v_attr| "#{k_attr}=\"#{v_attr}\"" }.join
-      "<#{key.to_s} #{attr}>#{xml(value[:value])}</#{key.to_s}>"
+      "<#{key} #{attr}>#{xml(value[:value])}</#{key}>"
     end
 
     # Prepares an argument for input to an eBay Trading API XML call.
     # * Times are converted to ISO 8601 format
     def self.serialize_input(input)
       case input
-        when Time then input.to_time.utc.iso8601
-        else input
+      when Time then input.to_time.utc.iso8601
+      else input
       end
     end
 
@@ -136,6 +138,7 @@ module Ebayr #:nodoc:
     def self.camelize(string)
       string = string.to_s
       return string unless string == string.downcase
+
       string.split('_').map(&:capitalize).join.gsub('Ebay', 'eBay')
     end
 
@@ -148,6 +151,7 @@ module Ebayr #:nodoc:
         http.verify_mode = OpenSSL::SSL::VERIFY_NONE
       end
       return http.start(&block) if block_given?
+
       http
     end
   end

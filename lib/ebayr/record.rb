@@ -1,4 +1,3 @@
-# -*- encoding : utf-8 -*-
 module Ebayr
   class Record < Hash
     def initialize(initial = {})
@@ -6,10 +5,11 @@ module Ebayr
       initial.each { |k, v| self[k] = v }
     end
 
-    def <=>(another)
-      return false unless another.respond_to(:keys) and another.respond_to(:"[]")
-      another.keys.each do |k|
-        return false unless convert_value(another[k]) == self[k]
+    def <=>(other)
+      return false unless other.respond_to(:keys) && other.respond_to(:"[]")
+
+      other.keys.each do |k|
+        return false unless convert_value(other[k]) == self[k]
       end
       true
     end
@@ -29,13 +29,14 @@ module Ebayr
       super(convert_key(key))
     end
 
-  protected
+    protected
+
     def convert_key(k)
       self.class.convert_key(k)
     end
 
     def self.convert_key(k)
-      k.to_s.underscore.gsub(/e_bay/, "ebay").to_sym
+      k.to_s.underscore.gsub(/e_bay/, 'ebay').to_sym
     end
 
     def convert_value(arg)
@@ -44,9 +45,9 @@ module Ebayr
 
     def self.convert_value(arg)
       case arg
-        when Hash then Record.new(arg)
-        when Array then arg.map { |a| convert_value(a) }
-        else arg
+      when Hash then Record.new(arg)
+      when Array then arg.map { |a| convert_value(a) }
+      else arg
       end
     end
   end

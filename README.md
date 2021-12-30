@@ -17,6 +17,10 @@ Or install it yourself as:
 
     $ gem install ebayr
 
+## Use with OAuth
+
+`Ebayr.call(:GetItem, { header: { 'X-EBAY-SOA-SECURITY-IAFTOKEN' => oauth_token } })`
+
 ## Ruby versions pre-2.2
 
 Older versions of ruby are no longer supported as of v0.1.0. To use ebayr
@@ -67,17 +71,20 @@ Ebayr.sandbox = false
 ```
 
 Now you're ready to make calls
+
 ```ruby
 Ebayr.call(:GeteBayOfficialTime)
 session = Ebayr.call(:GetSessionID, :RuName => Ebayr.ru_name)[:SessionID]
 ```
 
 To use an authorized user's key, pass in an `auth_token` parameter
+
 ```ruby
 Ebayr.call(:GetOrders, :auth_token => "another-ebay-auth-token")
 ```
 
 Use the input array to add to the body of the call
+
 ```ruby
 # Adds: "<a>1</a><a><b>1</b><b>2</b></a>" to the ebay request.
 args = [{ :a => 1 }, { :a => [{:b => 1 }, { :b => 2 }] }]
@@ -86,7 +93,7 @@ Ebayr::Request.new(:Blah, :input => args)
 
 ### Configuration
 
-Ebayr will look for the following Ruby files, and load them *once* in order (if
+Ebayr will look for the following Ruby files, and load them _once_ in order (if
 they exist) when the module is evaluated:
 
 1. /etc/ebayr.conf
@@ -160,6 +167,7 @@ You need to remember to include Fakeweb in your Gemfile, or Ebayr will complain.
 ## Credits
 
 Thanks to the great contributing maintainers on GitHub, including:
+
 - David DeGraw
 - Eric McKenna
 - Jason Schock
