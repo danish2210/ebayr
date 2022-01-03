@@ -12,7 +12,7 @@ module Ebayr # :nodoc:
       @uri = options.delete(:uri) || uri
       @uri = URI.parse(@uri) unless @uri.is_a? URI
       @auth_token = (options.delete(:auth_token) || auth_token).to_s
-      @custom_headers = options.delete(:headers)
+      @custom_headers = options.delete(:headers) || {}
       @site_id = (options.delete(:site_id) || site_id).to_s
       @compatability_level = (options.delete(:compatability_level) || compatability_level).to_s
       @http_timeout = (options.delete(:http_timeout) || 60).to_i
