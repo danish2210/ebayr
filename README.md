@@ -19,7 +19,7 @@ Or install it yourself as:
 
 ## Use with OAuth
 
-`Ebayr.call(:GetItem, { headers: { 'X-EBAY-SOA-SECURITY-IAFTOKEN' => oauth_token } })`
+`Ebayr.call(:GetItem, { headers: { 'X-EBAY-API-IAF-TOKEN' => oauth_token } })`
 
 ## Ruby versions pre-2.2
 
