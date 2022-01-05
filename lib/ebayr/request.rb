@@ -55,7 +55,7 @@ module Ebayr # :nodoc:
 
     # Returns eBay requester credential XML if @auth_token is present
     def requester_credentials_xml
-      return '' unless @auth_token.present? && @custom_headers.present?
+      return '' unless @auth_token.present? && @custom_headers.empty?
 
       <<-XML
       <RequesterCredentials>
